@@ -13,29 +13,20 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('pengusulans', function (Blueprint $table) {
-            $table->id();
+        Schema::create('usulan', function (Blueprint $table) {
+            $table->string("id")->primary();
             $table->string("nama");
-            $table->enum("status_usulan",[
-                "Terima Usulan",
-                "Tolak Usulan",
-                "Berkas Disetujui",
-                "Tidak Memenuhi Syarat"
-            ]);
-            $table->enum("jenis_layanan_nama",[
-                "jabatan",
-                "pensiun",
-                "pendidikan",
-                "cuti",
-            ]);
-            $table->date("tgl_usulan");
+            $table->string("nip")->nullable();
+            $table->string("status_usulan");
+            $table->string("jenis_layanan_nama");
+            $table->string("tgl_usulan");
             $table->string("instansi_nama");
             $table->enum("tipe_usulan",["I","U"]);
 
             $table->string("satker_approval");
             $table->string("nip_validator")->nullable();
             $table->string("nama_validator")->nullable();
-            $table->foreign("user_id")->references("id")->on("users")->cascadeOnDelete();
+            $table->foreign("satker_approval")->references("id")->on("users")->cascadeOnDelete();
 
             $table->timestamps();
         });
@@ -48,6 +39,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pengusulans');
+        Schema::dropIfExists('usulan');
     }
 };

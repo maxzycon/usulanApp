@@ -22,8 +22,8 @@
            <td>{{ $row->tgl_usulan }}</td>
            <td>{{ $row->instansi_nama }}</td>
            <td>{{ $row->tipe_usulan }}</td>
-           <td>{{ $row->user_id }}</td>
-           <td>{{ $row->user->name }}</td>
+           <td>{{ $row->satker_approval }}</td>
+           <td>{{ $row->nama_validator }}</td>
        </tr>
    @endforeach
    </tbody>

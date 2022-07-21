@@ -27,6 +27,7 @@
   <![endif]-->
 
   <!-- Google Font -->
+  <link rel="stylesheet" href="{{ asset("assets") }}/bower_components/select2/dist/css/select2.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -60,10 +61,13 @@
               <span class="hidden-xs">{{ auth()->user()->name }}</span>
             </a>
           </li>
-          <li class="dropdown user user-menu">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-              <span>Logout</span>
-            </a>
+          <li class="dropdown user user-menu py-5 pr-5">
+              <form action="{{ route("logout") }}" method="POST">
+                  @csrf
+                <button type="submit" class="text-white" style="background-color: #3c8dbc;color: white;border: none">
+                    <span>Logout</span>
+                </button>
+              </form>
           </li>
         </ul>
       </div>
@@ -114,6 +118,7 @@
     <script src="{{ asset("assets") }}/bower_components/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap 3.3.7 -->
     <script src="{{ asset("assets") }}/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="{{ asset("assets") }}/bower_components/select2/dist/js/select2.full.min.js"></script>
     <!-- SlimScroll -->
     <script src="{{ asset("assets") }}/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
     <!-- FastClick -->
@@ -125,9 +130,11 @@
     <script>
     $(document).ready(function () {
         $('.sidebar-menu').tree()
+        $('.select2').select2({
+            dropdownParent: $('#modal-default')
+        })
     })
     </script>
-
     <!-- Charting library -->
     <script src="https://unpkg.com/echarts/dist/echarts.min.js"></script>
     <!-- Chartisan -->

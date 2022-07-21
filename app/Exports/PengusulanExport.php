@@ -23,10 +23,9 @@ class PengusulanExport implements FromView
             if ($this->type1 === "lembaga"){
                 return $q->where("instansi_nama", $this->search1);
             }else{
-                return $q->where("user_id", $this->search1);
+                return $q->where("nama_validator", $this->search1);
             }
         });
-
         return view('exports.pengusulan', [
             'pengusulans' => $data->get()
         ]);

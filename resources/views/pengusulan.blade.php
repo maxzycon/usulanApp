@@ -21,7 +21,7 @@
             <select name="type" id="type" class="form-control" required>
               <option value="semua">Semua</option>
               <option value="lembaga">Nama lembaga</option>
-              <option value="validator">Id Validator</option>
+              <option value="validator">Nama Validator</option>
             </select>
           </div>
           <div class="form-group">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pengusulan;
+use App\Models\User;
 use Chartisan\PHP\Chartisan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,28 +14,78 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $rows = Pengusulan::query();
+        $rowDisetujui = Pengusulan::query();
+        $rowDiproses = Pengusulan::query();
+        $rowDitolak = Pengusulan::query();
+        $rowBelumDiproses = Pengusulan::query();
 
-        $rows->when($request->get("instansi") !== "semua", function($q) use ($request){
-            return $q->where("instansi_nama","LIKE","%{$request->get('instansi')}%");
-        });
+        if (auth()->user()->level === 1){
+            $rows->when($request->get("instansi") !== "semua" && $request->get("instansi") !== NULL, function($q) use ($request){
+                return $q->where("instansi_nama","LIKE","%{$request->get('instansi')}%");
+            });
 
-        $rows = $rows->get();
+            $rows->when($request->get("kanreg") !== "semua" && $request->get("kanreg") !== NULL, function($q) use ($request){
+                return $q->where("satker_approval",$request->get("kanreg"));
+            });
 
-        $totalPengusulan = $rows->count();
-        $totalDisetujui = $rows->where("status_usulan","Berkas Disetujui")->count();
-        $totalDitolak = $rows->where("status_usulan","Tidak Memenuhi Syarat")->count();
-        $totalDiproses = $rows->whereIn("status_usulan",["Berkas Disetujui","Tidak Memenuhi Syarat"])->count();
-        $totalBelumDiproses = $rows->where("status_usulan","Terima Usulan")->count();
+            $rowDisetujui->when($request->get("instansi") !== "semua" && $request->get("instansi") !== NULL, function($q) use ($request){
+                return $q->where("instansi_nama","LIKE","%{$request->get('instansi')}%");
+            });
+
+            $rowDisetujui->when($request->get("kanreg") !== "semua" && $request->get("kanreg") !== NULL, function($q) use ($request){
+                return $q->where("satker_approval",$request->get("kanreg"));
+            });
+
+            $rowDitolak->when($request->get("instansi") !== "semua" && $request->get("instansi") !== NULL, function($q) use ($request){
+                return $q->where("instansi_nama","LIKE","%{$request->get('instansi')}%");
+            });
+
+            $rowDitolak->when($request->get("kanreg") !== "semua" && $request->get("kanreg") !== NULL, function($q) use ($request){
+                return $q->where("satker_approval",$request->get("kanreg"));
+            });
+
+
+            $rowDiproses->when($request->get("instansi") !== "semua" && $request->get("instansi") !== NULL, function($q) use ($request){
+                return $q->where("instansi_nama","LIKE","%{$request->get('instansi')}%");
+            });
+
+            $rowDiproses->when($request->get("kanreg") !== "semua" && $request->get("kanreg") !== NULL, function($q) use ($request){
+                return $q->where("satker_approval",$request->get("kanreg"));
+            });
+
+            $rowBelumDiproses->when($request->get("instansi") !== "semua" && $request->get("instansi") !== NULL, function($q) use ($request){
+                return $q->where("instansi_nama","LIKE","%{$request->get('instansi')}%");
+            });
+
+            $rowBelumDiproses->when($request->get("kanreg") !== "semua" && $request->get("kanreg") !== NULL, function($q) use ($request){
+                return $q->where("satker_approval",$request->get("kanreg"));
+            });
+        }
+
+        if (auth()->user()->level === 2){
+            $rows->where("satker_approval",auth()->user()->id);
+            $rowDisetujui->where("satker_approval",auth()->user()->id);
+            $rowDitolak->where("satker_approval",auth()->user()->id);
+            $rowDiproses->where("satker_approval",auth()->user()->id);
+            $rowBelumDiproses->where("satker_approval",auth()->user()->id);
+        }
+
+        $totalPengusulan = $rows->total()->count();
+        $totalDisetujui = $rowDisetujui->disetujui()->count();
+        $totalDitolak = $rowDitolak->ditolak()->count();
+        $totalDiproses = $rowDiproses->diproses()->count();
+        $totalBelumDiproses = $rowBelumDiproses->belumDiproses()->count();
+
         $instansi = Pengusulan::select("instansi_nama")->groupBy("instansi_nama")->get();
 
-        $totalJabatan = $rows->groupBy("jenis_layanan_nama")["jabatan"]->count();
-        $totalPensiun = $rows->groupBy("jenis_layanan_nama")["pensiun"]->count();
-        $totalPendidikan = $rows->groupBy("jenis_layanan_nama")["pendidikan"]->count();
-        $totalCuti = $rows->groupBy("jenis_layanan_nama")["cuti"]->count();
+        $totalGolongan = Pengusulan::where("jenis_layanan_nama","Golongan")->count();
+        $totalPensiun = Pengusulan::where("jenis_layanan_nama","Pensiun")->count();
+        $totalPendidikan = Pengusulan::where("jenis_layanan_nama","Pendidikan")->count();
+        $totalCuti = Pengusulan::where("jenis_layanan_nama","Cuti")->count();
 
         $totalChart1 = $totalDitolak + $totalDiproses + $totalDisetujui;
-        $totalChart2 = $totalDisetujui + $totalPengusulan+$totalDitolak+$totalDiproses+$totalBelumDiproses;
-        $totalChart4 = $totalJabatan + $totalPensiun + $totalPendidikan + $totalCuti;
+        $totalChart2 = $totalDisetujui + $totalPengusulan + $totalDitolak + $totalDiproses + $totalBelumDiproses;
+        $totalChart4 = $totalGolongan + $totalPensiun + $totalPendidikan + $totalCuti;
 
         $chart = Chartisan::build()
         ->labels(['Ditolak', 'Diproses', 'Selesai'])
@@ -47,22 +98,32 @@ class DashboardController extends Controller
 
         $chart3 = Chartisan::build()
             ->labels(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])
-            ->dataset('Pengajuan', $this->getDataMonth(["Terima Usulan","Tolak Usulan","Berkas Disetujui","Tidak Memenuhi Syarat"]))
-            ->dataset('Diproses', $this->getDataMonth(["Berkas Disetujui","Tidak Memenuhi Syarat"]))
-            ->dataset('Pengajuan disetujui', $this->getDataMonth(["Berkas Disetujui"]))
-            ->dataset('Berkas ditolak', $this->getDataMonth(["Tidak Memenuhi Syarat"]))
+            ->dataset('Pengajuan', $this->getDataMonth(["12","13","16"], null, $request->get("instansi"), $request->get("kanreg")))
+            ->dataset('Diproses', $this->getDataMonth(["13","16"], null, $request->get("instansi"), $request->get("kanreg")))
+            ->dataset('Pengajuan disetujui', $this->getDataMonth(["16"], null, $request->get("instansi"), $request->get("kanreg")))
+            ->dataset('Berkas ditolak', $this->getDataMonth(["13"], null, $request->get("instansi"), $request->get("kanreg")))
             ->toJSON();
 
         $chart4 = Chartisan::build()
         ->labels(['Jabatan', 'Pensiun', 'Pendidikan', 'Cuti'])
-        ->advancedDataset('Data', [$this->toPercent($totalChart4, $totalJabatan), $this->toPercent($totalChart4, $totalPensiun), $this->toPercent($totalChart4, $totalPendidikan), $this->toPercent($totalChart4, $totalCuti)],["percent" => "%"])->toJSON();
+        ->advancedDataset('Data', [$this->toPercent($totalChart4, $totalGolongan), $this->toPercent($totalChart4, $totalPensiun), $this->toPercent($totalChart4, $totalPendidikan), $this->toPercent($totalChart4, $totalCuti)],["percent" => "%"])->toJSON();
 
-        // chart 1 => ditolak, disetujui , diproses
-        // chart 2 => disetujui, sisanya
-        // chart 3 => chart by time
-        // chart 4 => chart berdasarkan jenis_layanan_nama
+        $kanreg = User::where("level",2)->orderBy("name","asc")->get();
 
-        return view('dashboard', compact("instansi","totalPengusulan","totalDisetujui","totalDitolak","totalDiproses","totalBelumDiproses","chart","chart2","chart3", "chart4"));
+        return view('dashboard', compact(
+              "instansi",
+            "totalPengusulan",
+                        "totalDisetujui",
+                        "totalDitolak",
+                        "totalDiproses",
+                        "totalBelumDiproses",
+                        "kanreg",
+                        "chart",
+                        "chart2",
+                        "chart3",
+                        "chart4",
+            )
+        );
     }
 
     private function toPercent(int $total, int $number): int
@@ -70,21 +131,28 @@ class DashboardController extends Controller
         return round(($number/$total)*100);
     }
 
-    private function getDataMonth(array $condition, string $year = null): array
+    private function getDataMonth(array $condition, string $year = null, string $instansi = null, string $kanreg = null)
     {
-        $array = collect([]);
-        for ($i =1; $i <= 12; $i++){
-            $query = Pengusulan::select(
-                DB::raw("IFNULL(count(id),0) as data")
-            )
-                ->whereYear("tgl_usulan", $year ?? date("Y"))
-                ->whereMonth("tgl_usulan", $i)
-                ->whereIn("status_usulan",$condition)
-                ->orderBy('tgl_usulan')
-                ->groupBy(DB::raw("YEAR(tgl_usulan)"),DB::raw("MONTH(tgl_usulan)"))
-                ->first();
-            $array->push($query ? $query->data : 0);
+
+        $query = Pengusulan::select(
+            DB::raw("IFNULL(count(id),0) as data, YEAR(tgl_usulan) tahun_usulan, MONTH(tgl_usulan) bulan_usulan")
+        );
+
+        if ($instansi !== "semua" && $instansi !== NULL){
+            $query->where("instansi_nama", $instansi);
         }
-        return $array->all();
+
+        if ($kanreg !== "semua" && $kanreg !== NULL){
+            $query->where("satker_approval", $kanreg);
+        }
+
+        if ($year !== null){
+            $query->whereYear("tgl_usulan",$year);
+        }
+
+        $query->whereIn("status_usulan", $condition);
+        $query->orderByRaw("tahun_usulan ASC, bulan_usulan ASC");
+        $query->groupBy(DB::raw("YEAR(tgl_usulan)"),DB::raw("MONTH(tgl_usulan)"));
+        return  $query->pluck("data")->toArray();
     }
 }
