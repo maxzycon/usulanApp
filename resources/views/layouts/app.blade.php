@@ -130,9 +130,7 @@
     <script>
     $(document).ready(function () {
         $('.sidebar-menu').tree()
-        $('.select2').select2({
-            dropdownParent: $('#modal-default')
-        })
+        $('.select2').select2()
     })
     </script>
     <!-- Charting library -->
