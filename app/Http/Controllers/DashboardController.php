@@ -87,14 +87,15 @@ class DashboardController extends Controller
         $totalChart2 = $totalDisetujui + $totalPengusulan + $totalDitolak + $totalDiproses + $totalBelumDiproses;
         $totalChart4 = $totalGolongan + $totalPensiun + $totalPendidikan + $totalCuti;
 
-        $chart = Chartisan::build()
-        ->labels(['Ditolak', 'Diproses', 'Selesai'])
-        ->advancedDataset('Data', [$this->toPercent($totalChart1,$totalDitolak), $this->toPercent($totalChart1,$totalDiproses), $this->toPercent($totalChart1,$totalDisetujui)],["percent" => "%"])->toJSON();
+        $chart = [];
+        $chart['label'] = ['Ditolak', 'Diproses', 'Selesai'];
+        $chart['data'] = [$this->toPercent($totalChart1,$totalDitolak), $this->toPercent($totalChart1,$totalDiproses), $this->toPercent($totalChart1,$totalDisetujui)];
+        $chart = json_encode($chart);
 
-        $chart2 = Chartisan::build()
-        ->labels(['Completed', 'Incomplete'])
-        ->advancedDataset('Data', [$this->toPercent($totalChart2,$totalDisetujui),$this->toPercent($totalChart2,$totalPengusulan+$totalDitolak+$totalDiproses+$totalBelumDiproses)],["percent" => "%"])->toJSON();
-
+        $chart2 = [];
+        $chart2['label'] = ['Completed', 'Incomplete'];
+        $chart2['data'] = [$this->toPercent($totalChart2,$totalDisetujui),$this->toPercent($totalChart2,$totalPengusulan+$totalDitolak+$totalDiproses+$totalBelumDiproses)];
+        $chart2 = json_encode($chart2);
 
         $chart3 = Chartisan::build()
             ->labels(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])
@@ -104,9 +105,11 @@ class DashboardController extends Controller
             ->dataset('Berkas ditolak', $this->getDataMonth(["13"], null, $request->get("instansi"), $request->get("kanreg")))
             ->toJSON();
 
-        $chart4 = Chartisan::build()
-        ->labels(['Jabatan', 'Pensiun', 'Pendidikan', 'Cuti'])
-        ->advancedDataset('Data', [$this->toPercent($totalChart4, $totalGolongan), $this->toPercent($totalChart4, $totalPensiun), $this->toPercent($totalChart4, $totalPendidikan), $this->toPercent($totalChart4, $totalCuti)],["percent" => "%"])->toJSON();
+        $chart4 = [];
+        $chart4['label'] = ['Jabatan', 'Pensiun', 'Pendidikan', 'Cuti'];
+        $chart4['data'] = [$this->toPercent($totalChart4, $totalGolongan), $this->toPercent($totalChart4, $totalPensiun), $this->toPercent($totalChart4, $totalPendidikan), $this->toPercent($totalChart4, $totalCuti)];
+        $chart4 = json_encode($chart4);
+
 
         $kanreg = User::where("level",2)->orderBy("name","asc")->get();
 
@@ -135,7 +138,7 @@ class DashboardController extends Controller
     {
 
         $query = Pengusulan::select(
-            DB::raw("IFNULL(count(id),0) as data, YEAR(tgl_usulan) tahun_usulan, MONTH(tgl_usulan) bulan_usulan")
+            DB::raw("coalesce(count(id),0) as data, date_part('year', TO_DATE(tgl_usulan, 'YYYY-MM-DD')) tahun_usulan, date_part('month', TO_DATE(tgl_usulan, 'YYYY-MM-DD')) bulan_usulan")
         );
 
         if ($instansi !== "semua" && $instansi !== NULL){
@@ -152,7 +155,7 @@ class DashboardController extends Controller
 
         $query->whereIn("status_usulan", $condition);
         $query->orderByRaw("tahun_usulan ASC, bulan_usulan ASC");
-        $query->groupBy(DB::raw("YEAR(tgl_usulan)"),DB::raw("MONTH(tgl_usulan)"));
+        $query->groupBy(DB::raw("date_part('year', TO_DATE(tgl_usulan, 'YYYY-MM-DD'))"),DB::raw("date_part('month', TO_DATE(tgl_usulan, 'YYYY-MM-DD'))"));
         return  $query->pluck("data")->toArray();
     }
 }
