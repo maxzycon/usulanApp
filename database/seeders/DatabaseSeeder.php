@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
              'id' => 'A5EB03E240F7F6A0E040640A040252AD',
              'name' => 'Pusat',
              'email' => 'pusat@example.com',
+             'username' => 'pusat',
              'password' => Hash::make("pusat123"),
              'level' => 1
          ]);
@@ -46,6 +47,7 @@ class DatabaseSeeder extends Seeder
                  'id' => $row,
                  'name' => "Satker ". $key+1,
                  'email' => "satker". $key+1 ."@example.com",
+                 'username' => "satker". $key+1,
                  'password' => Hash::make("satker123"),
                  'level' => 2
              ]);

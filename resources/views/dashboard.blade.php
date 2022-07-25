@@ -93,7 +93,11 @@
                     </div>
                 </div>
                 <div class="box-body">
-                    <div id="chart1" style="height: 300px;"></div>
+                    <div class="chart-container">
+                        <div class="doughnut-chart-container" style="height: 300px;">
+                            <canvas id="pie-chart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -110,7 +114,11 @@
                     </div>
                 </div>
                 <div class="box-body">
-                    <div id="chart2" style="height: 300px;"></div>
+                    <div class="chart-container">
+                        <div class="doughnut-chart-container" style="height: 300px;">
+                            <canvas id="chart2"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -127,7 +135,11 @@
                     </div>
                 </div>
                 <div class="box-body">
-                    <div id="chart4" style="height: 300px;"></div>
+                    <div class="chart-container">
+                        <div class="pie-chart-container" style="height: 300px;">
+                            <canvas id="chart4"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -198,46 +210,103 @@
     @endif
 
       @push("js")
-      <script src="{{ asset("assets/") }}/bower_components/chart.js/Chart.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.js"></script>
+{{--        <script src="{{ asset("assets/") }}/bower_components/chart.js/Chart.js"></script>--}}
         <script>
-            const chart = new Chartisan({
-                el: '#chart1',
-                data: {!! $chart !!},
-                hooks: new ChartisanHooks()
-                    .tooltip()
-                    .colors(['#FE0045','#ECC94B','#67C560'])
-                    .datasets('pie')
-                    .axis(false)
-            });
+            $(function(){
+                var cDataChart1 = JSON.parse(`<?= $chart; ?>`);
+                new Chart($("#pie-chart"), {
+                    type: 'doughnut',
+                    data: {
+                        labels: cDataChart1.label,
+                        datasets: [
+                            {
+                                data: cDataChart1.data,
+                                backgroundColor: ['#4299E1','#67C560','#C07EF1'],
+                                borderColor: ['#4299E1','#67C560','#C07EF1'],
+                                borderWidth: [1, 1, 1]
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                            display: true,
+                            position: "bottom",
+                            labels: {
+                                fontColor: "#333",
+                                fontSize: 13,
+                            }
+                        }
+                    }
+                });
 
-            const chart2 = new Chartisan({
-                el: '#chart2',
-                data: {!! $chart2 !!},
-                hooks: new ChartisanHooks()
-                .tooltip()
-                .colors(['#67C560','#ECC94B'])
-                    .datasets('pie')
-                    .axis(false)
-            });
+                var cDataChart2 = JSON.parse(`<?= $chart2; ?>`);
+                new Chart($("#chart2"), {
+                    type: 'doughnut',
+                    data: {
+                        labels: cDataChart2.label,
+                        datasets: [
+                            {
+                                data: cDataChart2.data,
+                                backgroundColor: ['#C07EF1','#67C560','#ECC94B'],
+                                borderColor: ['#C07EF1','#67C560','#ECC94B'],
+                                borderWidth: [1, 1, 1]
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                            display: true,
+                            position: "bottom",
+                            labels: {
+                                fontColor: "#333",
+                                fontSize: 13,
+                            }
+                        }
+                    }
+                });
 
+
+                var cData = JSON.parse(`<?= $chart4; ?>`);
+                new Chart($("#chart4"), {
+                    type: 'pie',
+                    data: {
+                        labels: cData.label,
+                        datasets: [
+                            {
+                                data: cData.data,
+                                backgroundColor: ['#C07EF1','#67C560','#ECC94B','#e84393'],
+                                borderColor: ['#C07EF1','#67C560','#ECC94B','#e84393'],
+                                borderWidth: [1, 1, 1]
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        legend: {
+                            display: true,
+                            position: "bottom",
+                            labels: {
+                                fontColor: "#333",
+                                fontSize: 13,
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+
+        <script>
             const chart3 = new Chartisan({
                 el: '#chart3',
                 data: {!! $chart3 !!},
                 hooks: new ChartisanHooks()
                 .tooltip()
-                    .legend()
-                    .colors()
-                    .datasets(["bar"]),
-            });
-
-            const chart4 = new Chartisan({
-                el: '#chart4',
-                data: {!! $chart4 !!},
-                hooks: new ChartisanHooks()
-                .tooltip()
-                .colors(['#4299E1','#FE0045','#C07EF1','#67C560','#ECC94B'])
-                    .datasets('pie').axis(false)
-
+                .legend()
+                .colors()
+                .datasets(["bar"]),
             });
         </script>
       @endpush
