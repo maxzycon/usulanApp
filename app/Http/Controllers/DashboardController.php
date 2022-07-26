@@ -138,7 +138,7 @@ class DashboardController extends Controller
     {
 
         $query = Pengusulan::select(
-            DB::raw("coalesce(count(id),0) as data, date_part('year', TO_DATE(tgl_usulan, 'YYYY-MM-DD')) tahun_usulan, date_part('month', TO_DATE(tgl_usulan, 'YYYY-MM-DD')) bulan_usulan")
+            DB::raw("coalesce(count(id),0) as data, date_part('year', tgl_usulan) tahun_usulan, date_part('month', tgl_usulan) bulan_usulan")
         );
 
         if ($instansi !== "semua" && $instansi !== NULL){
@@ -155,7 +155,7 @@ class DashboardController extends Controller
 
         $query->whereIn("status_usulan", $condition);
         $query->orderByRaw("tahun_usulan ASC, bulan_usulan ASC");
-        $query->groupBy(DB::raw("date_part('year', TO_DATE(tgl_usulan, 'YYYY-MM-DD'))"),DB::raw("date_part('month', TO_DATE(tgl_usulan, 'YYYY-MM-DD'))"));
+        $query->groupBy(DB::raw("date_part('year', tgl_usulan)"),DB::raw("date_part('month', tgl_usulan)"));
         return  $query->pluck("data")->toArray();
     }
 }
