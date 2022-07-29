@@ -131,7 +131,7 @@ class DashboardController extends Controller
 
     private function toPercent(int $total, int $number): int
     {
-        return round(($number/$total)*100);
+        return $total != 0 ?? round(($number/$total)*100);
     }
 
     private function getDataMonth(array $condition, string $year = null, string $instansi = null, string $kanreg = null)
